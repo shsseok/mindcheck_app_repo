@@ -1,7 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'screens/main_screen.dart'; // MainScreen 파일 import (경로에 맞게 수정)
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  // dotenv 초기화
+  await dotenv.load(fileName: "assets/config/.env");
+  await Supabase.initialize(
+    url: dotenv.env['SUPABASE_URL']!,
+    anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
+  );
   runApp(const MyApp());
 }
 
