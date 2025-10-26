@@ -1,7 +1,9 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+import 'package:mindcheck_app/models/answer.dart';
 import 'package:mindcheck_app/models/question.dart';
+import 'package:mindcheck_app/services/answer_service.dart';
 import 'package:mindcheck_app/services/category_service.dart';
 import 'package:mindcheck_app/services/question_service.dart';
 import 'package:dart_openai/dart_openai.dart';
@@ -10,6 +12,7 @@ import 'supabase_service.dart';
 class AiService {
   final QuestionService _questionService = QuestionService();
   final CategoryService _categoryService = CategoryService();
+  final AnswerService _answerService = AnswerService();
  ///  오늘 질문 존재 여부 확인 → 없으면 새로 생성
   Future<void> generateDailyQuestionsIfNeeded(String categoryName) async {
     final today = DateTime.now().toIso8601String().substring(0,10);
@@ -44,13 +47,18 @@ class AiService {
 
     final aiResponseData = jsonDecode(responseText);
     
-    final questionJsonList = aiResponseData['questions'] as List;
+    final questionAndAnswerJsonList = aiResponseData['questions'] as List;
     final category = await _categoryService.getCategoryByName(categoryName);
-    List<Map<String,dynamic>> questionMapList =[];
-    for(final question in questionJsonList){
-      questionMapList.add(Question(categoryId: category.id, questionText: question['question']).toMap());
+
+    for(final questionAndAnswer in questionAndAnswerJsonList){
+      final savedQuestionId = await _questionService.saveQuestion(Question(categoryId: category.id, questionText: questionAndAnswer['question']).toMap());
+      final List<Map<String,dynamic>> answerMapList = []; 
+      for(final answer in questionAndAnswer['answers']){
+        answerMapList.add(Answer(questionId: savedQuestionId, answerText: answer['text'], score: answer['score']).toMap());
+      }
+      _answerService.saveAnswers(answerMapList);
     }
-    _questionService.saveQuestions(questionMapList);
+
   }
 
 }
