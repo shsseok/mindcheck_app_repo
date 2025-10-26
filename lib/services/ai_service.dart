@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
+import 'package:mindcheck_app/models/question.dart';
 import 'package:mindcheck_app/services/category_service.dart';
 import 'package:mindcheck_app/services/question_service.dart';
 import 'package:dart_openai/dart_openai.dart';
@@ -39,8 +42,15 @@ class AiService {
 
     print('🧠 AI 생성 결과: $responseText');
 
-    final category = await _categoryService.getCategoryByName(categoryName);
+    final aiResponseData = jsonDecode(responseText);
     
+    final questionJsonList = aiResponseData['questions'] as List;
+    final category = await _categoryService.getCategoryByName(categoryName);
+    List<Map<String,dynamic>> questionMapList =[];
+    for(final question in questionJsonList){
+      questionMapList.add(Question(categoryId: category.id, questionText: question['question']).toMap());
+    }
+    _questionService.saveQuestions(questionMapList);
   }
 
 }

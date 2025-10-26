@@ -17,9 +17,9 @@ Future<bool> hasTodayQuestions() async {
     return response.isNotEmpty;
   }
 
-Future<bool> saveQuestions() async {
-  await supabase
+Future<bool> saveQuestions(List<Map<String,dynamic>> questions) async {
+  return await supabase
   .from('questions')
-  .insert(values)
+  .insert(questions);
 }
 }
