@@ -15,4 +15,18 @@ class CategoryService {
     return Categories.fromMap(response!);
     
   }
-}
+
+  Future<List<Categories>> getCategoryList() async{
+    final categories = await supabase
+    .from('categories')
+    .select();
+    
+    List<Categories> categoryList = [];
+    for(final category in categories){
+        categoryList.add(Categories(id: category['id'], name: category['name']));
+    }
+    return categoryList;
+  }
+   
+    
+  }

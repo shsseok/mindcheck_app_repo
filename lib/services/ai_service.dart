@@ -3,16 +3,19 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:mindcheck_app/models/answer.dart';
 import 'package:mindcheck_app/models/question.dart';
+import 'package:mindcheck_app/models/result_range.dart';
 import 'package:mindcheck_app/services/answer_service.dart';
 import 'package:mindcheck_app/services/category_service.dart';
 import 'package:mindcheck_app/services/question_service.dart';
 import 'package:dart_openai/dart_openai.dart';
+import 'package:mindcheck_app/services/result_range_service.dart';
 import 'package:mindcheck_app/utils/prompt_template.dart';
 import 'supabase_service.dart';
 class AiService {
   final QuestionService _questionService = QuestionService();
   final CategoryService _categoryService = CategoryService();
   final AnswerService _answerService = AnswerService();
+  final ResultRangeService _resultRangeService = ResultRangeService();
  ///  오늘 질문 존재 여부 확인 → 없으면 새로 생성
   Future<void> generateDailyQuestionsIfNeeded(String categoryName) async {
     final today = DateTime.now().toIso8601String().substring(0,10);
@@ -58,6 +61,13 @@ class AiService {
       }
       _answerService.saveAnswers(answerMapList);
     }
+
+    final resultRangeMapList = aiResponseData['results'] as List;
+    final List<Map<String,dynamic>> resultRangeList = [];
+    for(final resultRange in resultRangeMapList){
+      resultRangeList.add(ResultRange(categoryId: category.id, rangeText: resultRange['range'], type: resultRange['type'], description: resultRange['description']).toMap());
+    }
+    _resultRangeService.saveResultRanges(resultRangeList);
 
   }
 
