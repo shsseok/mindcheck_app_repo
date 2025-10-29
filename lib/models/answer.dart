@@ -29,7 +29,6 @@ class Answer {
       'question_id': questionId,
       'answer_text': answerText,
       'score': score,
-      'created_at': createdAt!.toIso8601String()
     };
   }
 }

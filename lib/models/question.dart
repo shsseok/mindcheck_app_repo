@@ -24,7 +24,6 @@ class Question {
     return {
       'category_id': categoryId,
       'question_text': questionText,
-      'created_at': createdAt!.toIso8601String(),
     };
   }
 }

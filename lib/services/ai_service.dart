@@ -40,7 +40,7 @@ class AiService {
              [OpenAIChatCompletionChoiceMessageContentItemModel.text(PromptTemplate.generatePrompt(categoryName))],
         ),
       ],
-      maxTokens: 2000,
+      maxTokens: 5000,
     );
   
     final responseText =

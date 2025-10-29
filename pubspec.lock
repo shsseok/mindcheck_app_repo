@@ -117,10 +117,10 @@ packages:
     dependency: transitive
     description:
       name: fetch_client
-      sha256: "375253f4efe64303c793fb17fe90771c591320b2ae11fb29cb5b406cc8533c00"
+      sha256: "3766964cc49ad1d007c261d7acecea61a73581e31fdbd948b446025851766bc8"
       url: "https://pub.dev"
     source: hosted
-    version: "1.1.4"
+    version: "1.2.0"
   ffi:
     dependency: transitive
     description:

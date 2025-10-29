@@ -67,7 +67,7 @@ class MainScreen extends StatelessWidget {
                         style: const TextStyle(
                           fontFamily: 'Macondo',
                           fontSize: 24,
-                          color: Colors.white,
+                          color: Colors.black,
                         ),
                       ),
                     );

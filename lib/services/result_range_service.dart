@@ -4,8 +4,14 @@ class ResultRangeService{
     final supabase = Supabase.instance.client;
 
     Future<bool> saveResultRanges(List<Map<String,dynamic>> resultRangeMapList) async{
-      return await supabase
-      .from('result_range')
+    try{
+      await supabase
+      .from('result_ranges')
       .insert(resultRangeMapList);
+        return true;
+    } catch (e) {
+      print('❌ 결과 저장 실패: $e');
+      return false;
+    }
     }
 }
