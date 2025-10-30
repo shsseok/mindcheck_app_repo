@@ -10,4 +10,5 @@ class Categories {
       name: map['name'],
     );
   }
+
 }
