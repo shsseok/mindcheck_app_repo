@@ -14,6 +14,8 @@ void main() async {
     anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
   );
   OpenAI.apiKey = dotenv.env['OPENAI_API_KEY']!;
+  //OpenAI 기본 TimeOut 요청 설정
+  OpenAI.requestsTimeOut = const Duration(minutes: 3);  
   await AppInit().aiDataInit();
   runApp(const MyApp());
 }
