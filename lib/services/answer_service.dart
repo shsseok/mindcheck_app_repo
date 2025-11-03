@@ -1,3 +1,4 @@
+import 'package:mindcheck_app/models/answer.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AnswerService {
@@ -11,5 +12,18 @@ Future<bool> saveAnswers(List<Map<String,dynamic>> answers) async {
       print('❌ 답변 저장 실패: $e');
       return false;
     }
+}
+
+Future<List<Answer>> selectAnswer(int questionId) async {
+     final seletedAnswers = await supabase
+     .from('answers')
+     .select()
+     .eq('question_id', questionId);
+
+      List<Answer> answerList = [];
+      for(final answer in seletedAnswers){
+        answerList.add(Answer.fromJson(answer));
+      }
+     return answerList;
 }
 }

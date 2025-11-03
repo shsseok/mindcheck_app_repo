@@ -1,10 +1,41 @@
 import 'package:flutter/material.dart';
 import 'package:mindcheck_app/models/categories.dart';
+import 'package:mindcheck_app/screens/question_screen.dart';
 import 'package:mindcheck_app/services/category_service.dart';
 
 class MainScreen extends StatelessWidget {
   const MainScreen({super.key});
 
+ void _showStartDialog(BuildContext context, Categories category) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("질문 시작"),
+        content:  Text("${category.name} 관련 질문을 시작하시겠습니까?"),
+        actions: [
+          TextButton(
+            onPressed: (){
+              print("질문 선택 (예) 클릭");
+              Navigator.push(
+                context, 
+                MaterialPageRoute(
+                  builder: (context) => QuestionScreen(category: category)
+                  ),
+                );
+            },
+            child: const Text("예"),
+          ),
+          TextButton(
+            onPressed: () {
+               print("질문 선택 (아니오) 클릭");
+                Navigator.pop(context);
+          },
+            child: const Text("아니오"),
+          ),
+        ],
+      ),
+    );
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -60,7 +91,7 @@ class MainScreen extends StatelessWidget {
                         padding: const EdgeInsets.all(10),
                       ),
                       onPressed: () {
-                        print('${category.name} 클릭됨');
+                        _showStartDialog(context,category);
                       },
                       child: Text(
                         category.name,

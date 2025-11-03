@@ -37,7 +37,7 @@ dependencies:
   supabase_flutter: ^2.10.3
   flutter_dotenv: ^6.0.0
   dart_openai: ^5.1.0
-
+  percent_indicator: ^4.2.5
 dev_dependencies:
   flutter_test:
     sdk: flutter
