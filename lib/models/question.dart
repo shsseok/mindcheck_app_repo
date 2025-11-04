@@ -15,7 +15,7 @@ class Question {
   });
 
   factory Question.fromJson(Map<String,dynamic> json){
-    final answerJson = json['answer'] as List<dynamic>?;
+    final answerJson = json['answers'] as List<dynamic>?;
     return Question(
       id: json['id'],
       categoryId: json['category_id'],
