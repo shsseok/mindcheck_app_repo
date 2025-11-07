@@ -63,6 +63,7 @@ flutter:
 
   assets:
     - assets/images/background_image.png
+    - assets/images/bike.png
     - assets/config/.env 
 
 

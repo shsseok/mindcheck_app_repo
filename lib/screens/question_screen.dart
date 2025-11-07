@@ -18,7 +18,7 @@ class _QuestionScreenState extends State<QuestionScreen> {
   int currentIndex = 0;
   late PageController _pageController;
   late Future<List<Question>> _qAList;
-
+  Map<int,int?> selectedAnswerIds = {};
   @override
   void initState() {
     super.initState();
@@ -55,12 +55,21 @@ class _QuestionScreenState extends State<QuestionScreen> {
             padding: const EdgeInsets.all(20),
             child: Column(
               children: [
-                LinearProgressIndicator(
-                  value: (currentIndex + 1) / 10,
-                  backgroundColor: Colors.amber,
-                  color: Colors.black,
-                  minHeight: 20,
-                  borderRadius: BorderRadius.circular(10),
+                Stack(
+                  children: [
+                  LinearProgressIndicator(
+                    value: (selectedAnswerIds.length / 10),
+                    backgroundColor: Colors.brown.withOpacity(0.5),
+                    color: Colors.blueAccent.withOpacity(0.5),
+                    minHeight: 40,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  AnimatedAlign(
+                    alignment: Alignment((selectedAnswerIds.length / 10)*2-1, 0), 
+                    duration: const Duration(microseconds: 10),
+                    child: Image.asset('assets/images/bike.png',width: 33,),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 50),
                 // 🔹 질문 + 답변 표시하는 FutureBuilder 하나만 사용
@@ -83,13 +92,12 @@ class _QuestionScreenState extends State<QuestionScreen> {
                       final qAList = snapshot.data!;
                       final question = qAList[currentIndex];
                       final answers = question.answers;
-
                       return Column(
                         children: [
                           // 🟡 질문 카드
                           SizedBox(
                             height: 200,
-                            child: PageView.builder(
+                            child: PageView.builder( 
                               controller: _pageController,
                               itemCount: qAList.length,
                               onPageChanged: (index) {
@@ -133,12 +141,13 @@ class _QuestionScreenState extends State<QuestionScreen> {
                             child: Column(
                               key: ValueKey(currentIndex),
                               children: answers!.map((a) {
+                                final bool isSelectedAnswer = selectedAnswerIds[currentIndex] == a.id; 
                                 return Padding(
                                   padding: const EdgeInsets.symmetric(vertical: 8),
                                   child: ElevatedButton(
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor:
-                                          Colors.black.withOpacity(0.5),
+                                          isSelectedAnswer ? Colors.amber.shade50 : Colors.black.withOpacity(0.5),
                                       minimumSize:
                                           const Size(double.infinity, 50),
                                       shape: RoundedRectangleBorder(
@@ -146,7 +155,23 @@ class _QuestionScreenState extends State<QuestionScreen> {
                                       ),
                                     ),
                                     onPressed: () {
-                                      // TODO: 답변 클릭 로직
+                                      if(selectedAnswerIds.containsKey(currentIndex)){
+                                          //이미지 질문을 포함하고 같은 질문에 답했다면
+                                          if(selectedAnswerIds[currentIndex] == a.id){                            
+                                             setState(() {
+                                              selectedAnswerIds.remove(currentIndex);
+                                            });
+                                          }else{                                            
+                                            setState(() {
+                                              selectedAnswerIds.remove(currentIndex);
+                                              selectedAnswerIds[currentIndex] = a.id;
+                                            });
+                                          }
+                                      }else{
+                                        setState(() {
+                                          selectedAnswerIds[currentIndex] = a.id;
+                                        });
+                                      }
                                     },
                                     child: Text(
                                       a.answerText,
