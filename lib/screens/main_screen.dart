@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:mindcheck_app/models/categories.dart';
 import 'package:mindcheck_app/screens/question_screen.dart';
 import 'package:mindcheck_app/services/category_service.dart';
+import 'package:mindcheck_app/services/question_manege.dart';
 
 class MainScreen extends StatelessWidget {
   const MainScreen({super.key});
 
- void _showStartDialog(BuildContext context, Categories category) {
-    showDialog(
+ void _showStartDialog(BuildContext context, Categories category,bool isProgress) {
+  if(!isProgress){
+     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text("질문 시작"),
@@ -35,6 +37,14 @@ class MainScreen extends StatelessWidget {
         ],
       ),
     );
+  }else{
+      Navigator.push(context, 
+      MaterialPageRoute(
+        builder: (_) => QuestionScreen(category: category),
+        ),
+      );
+  }
+  
   }
   @override
   Widget build(BuildContext context) {
@@ -90,8 +100,9 @@ class MainScreen extends StatelessWidget {
                         ),
                         padding: const EdgeInsets.all(10),
                       ),
-                      onPressed: () {
-                        _showStartDialog(context,category);
+                      onPressed: () async {
+                        final isProgress = await QuestionManege.hasProgress(categoryId: category.id);
+                        _showStartDialog(context,category,isProgress);
                       },
                       child: Text(
                         category.name,

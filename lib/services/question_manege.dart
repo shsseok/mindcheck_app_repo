@@ -19,12 +19,37 @@ class QuestionManege {
     await prefs.setString(_answersKey(categoryId), json);
   }
 
-    static Future<void> loadLocalStorageQuestionProgress({
+  static Future<Map<String, dynamic>> loadLocalStorageQuestionProgress({
     required int categoryId,
   }) async {
     final prefs = await SharedPreferences.getInstance();
-      
+    final currentIndex = prefs.getInt(_indexKey(categoryId)) ?? 0;  
+
+    final answerString = prefs.getString(_answersKey(categoryId));
+    Map<int,int?> selectedAnswerIds = {};
+    if(answerString != null){
+       final Map<String,dynamic> jsonMap = jsonDecode(answerString);
+       selectedAnswerIds = jsonMap.map((key,value) => MapEntry(int.parse(key), value as int?));    
+    }    
+
+    return {
+      'currentIndex' : currentIndex,
+      'selectedAnswerIds' : selectedAnswerIds,
+    };                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
   
   }
+
+   static Future<bool> hasProgress({
+    required int categoryId
+   }) async{
+    final prefs = await SharedPreferences.getInstance();
+    
+    final hasIndex = prefs.containsKey(_indexKey(categoryId));
+    final hasAnswers = prefs.containsKey(_answersKey(categoryId));
+    if(hasIndex || hasAnswers){
+      return true;
+    }
+    return false;
+   }
 
 }

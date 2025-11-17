@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mindcheck_app/models/categories.dart';
 import 'package:mindcheck_app/models/question.dart';
+import 'package:mindcheck_app/services/question_manege.dart';
 import 'package:mindcheck_app/services/question_service.dart';
 
 class QuestionScreen extends StatefulWidget {
@@ -17,16 +18,25 @@ class QuestionScreen extends StatefulWidget {
 class _QuestionScreenState extends State<QuestionScreen> {
   int currentIndex = 0;
   late PageController _pageController;
+  late Future<Map<String, dynamic>> loadData;
   late Future<List<Question>> _qAList;
   Map<int,int?> selectedAnswerIds = {};
   @override
   void initState() {
     super.initState();
     _pageController = PageController(initialPage: 0);
-    _qAList =
-        QuestionService().selectQuestionsAndAnswersByCategoryId(widget.category.id);
-  }
+    _qAList = QuestionService().selectQuestionsAndAnswersByCategoryId(widget.category.id);
+    QuestionManege.loadLocalStorageQuestionProgress(categoryId: widget.category.id)
+    .then((data) {
+     setState(() {
+       currentIndex = data['currentIndex'];
+       selectedAnswerIds = data['selectedAnswerIds'];
+      _pageController = PageController(initialPage: currentIndex);
+     });
+   });
 
+  }
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -154,24 +164,24 @@ class _QuestionScreenState extends State<QuestionScreen> {
                                         borderRadius: BorderRadius.circular(15),
                                       ),
                                     ),
-                                    onPressed: () {
-                                      if(selectedAnswerIds.containsKey(currentIndex)){
-                                          //이미지 질문을 포함하고 같은 질문에 답했다면
+                                    onPressed: ()  async {
+                                      setState(() {
+                                         if(selectedAnswerIds.containsKey(currentIndex)){                                         //이미 질문을 포함하고 같은 질문에 답했다면
                                           if(selectedAnswerIds[currentIndex] == a.id){                            
-                                             setState(() {
                                               selectedAnswerIds.remove(currentIndex);
-                                            });
-                                          }else{                                            
-                                            setState(() {
-                                              selectedAnswerIds.remove(currentIndex);
-                                              selectedAnswerIds[currentIndex] = a.id;
-                                            });
+
+                                          }else{                                                                               
+                                              selectedAnswerIds[currentIndex] = a.id;                                       
                                           }
-                                      }else{
-                                        setState(() {
-                                          selectedAnswerIds[currentIndex] = a.id;
-                                        });
+                                      }else{                                      
+                                          selectedAnswerIds[currentIndex] = a.id;                                       
                                       }
+                                      });                                   
+                                      await QuestionManege.saveLocalStorageQuestionProgress(
+                                        categoryId: widget.category.id,
+                                        currentIndex: currentIndex,
+                                        selectedAnswerIds: selectedAnswerIds,
+                                      );
                                     },
                                     child: Text(
                                       a.answerText,
