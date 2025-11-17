@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:mindcheck_app/models/categories.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
