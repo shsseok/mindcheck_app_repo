@@ -52,4 +52,11 @@ class QuestionManege {
     return false;
    }
 
+    static Future<void> clearLocalStorageProgress(int categoryId) async {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.remove(_indexKey(categoryId));
+        await prefs.remove(_answersKey(categoryId));
+}
+
+
 }

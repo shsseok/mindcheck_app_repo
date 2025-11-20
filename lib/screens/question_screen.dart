@@ -3,6 +3,7 @@ import 'package:mindcheck_app/models/categories.dart';
 import 'package:mindcheck_app/models/question.dart';
 import 'package:mindcheck_app/services/question_manege.dart';
 import 'package:mindcheck_app/services/question_service.dart';
+import 'package:mindcheck_app/services/user_answer_service.dart';
 
 class QuestionScreen extends StatefulWidget {
   final Categories category;
@@ -37,8 +38,37 @@ class _QuestionScreenState extends State<QuestionScreen> {
 
   }
   
+  void _showSubmitDialog(Map<int,int?> selectedAnswerIds,String userId){
+    showDialog(
+          context: context, 
+          builder: (context){
+            return AlertDialog(
+              title: const Text("답변 제출"),
+              content: const Text("답변을 제출 하시겠습니까?"),
+              actions: [
+                TextButton(
+                  onPressed: (){
+                    print("답변 제출 아니오 선택");
+                    Navigator.pop(context);
+                  }, 
+                  child: const Text("아니오"),
+                  ),
+                  ElevatedButton(
+                  onPressed: (){
+                    print("답변 제출 예 선택");
+                    Navigator.pop(context);
+                    UserAnswerService().saveUserAnswers(selectedAnswerIds, userId);
+                  }, 
+                  child: const Text("네"), 
+                  ),
+              ],
+            );
+          }
+        );
+  }
   @override
   Widget build(BuildContext context) {
+    print(selectedAnswerIds.length);
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -149,9 +179,9 @@ class _QuestionScreenState extends State<QuestionScreen> {
                               child: child,
                             ),
                             child: Column(
-                              key: ValueKey(currentIndex),
+                              key: ValueKey(question.id),
                               children: answers!.map((a) {
-                                final bool isSelectedAnswer = selectedAnswerIds[currentIndex] == a.id; 
+                                final bool isSelectedAnswer = selectedAnswerIds[question.id] == a.id; 
                                 return Padding(
                                   padding: const EdgeInsets.symmetric(vertical: 8),
                                   child: ElevatedButton(
@@ -166,15 +196,15 @@ class _QuestionScreenState extends State<QuestionScreen> {
                                     ),
                                     onPressed: ()  async {
                                       setState(() {
-                                         if(selectedAnswerIds.containsKey(currentIndex)){                                         //이미 질문을 포함하고 같은 질문에 답했다면
-                                          if(selectedAnswerIds[currentIndex] == a.id){                            
-                                              selectedAnswerIds.remove(currentIndex);
+                                         if(selectedAnswerIds.containsKey(question.id)){                                         //이미 질문을 포함하고 같은 질문에 답했다면
+                                          if(selectedAnswerIds[question.id] == a.id){                            
+                                              selectedAnswerIds.remove(question.id);
 
                                           }else{                                                                               
-                                              selectedAnswerIds[currentIndex] = a.id;                                       
+                                              selectedAnswerIds[question.id!] = a.id;                                       
                                           }
                                       }else{                                      
-                                          selectedAnswerIds[currentIndex] = a.id;                                       
+                                          selectedAnswerIds[question.id!] = a.id;                                       
                                       }
                                       });                                   
                                       await QuestionManege.saveLocalStorageQuestionProgress(
@@ -182,6 +212,10 @@ class _QuestionScreenState extends State<QuestionScreen> {
                                         currentIndex: currentIndex,
                                         selectedAnswerIds: selectedAnswerIds,
                                       );
+                                      bool isShowDialog = qAList.every((q) => selectedAnswerIds.containsKey(q.id));
+                                      if(isShowDialog){
+                                        _showSubmitDialog(selectedAnswerIds,"f9912098-c73a-45fc-847b-e8871b3d33a0");
+                                      }
                                     },
                                     child: Text(
                                       a.answerText,
