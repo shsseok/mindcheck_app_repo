@@ -2,6 +2,7 @@ import 'package:dart_openai/dart_openai.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:mindcheck_app/app_init.dart';
+import 'package:mindcheck_app/screens/result_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'screens/main_screen.dart'; // MainScreen 파일 import (경로에 맞게 수정)
 
@@ -26,7 +27,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-       home: MainScreen(), // 앱 시작 시 표시할 화면시작 시 MainScreen으로 이동
+       home: ResultScreen(), // 앱 시작 시 표시할 화면시작 시 MainScreen으로 이동
     );
   }
 }

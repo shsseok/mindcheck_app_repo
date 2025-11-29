@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mindcheck_app/models/categories.dart';
 import 'package:mindcheck_app/models/question.dart';
+import 'package:mindcheck_app/screens/result_screen.dart';
 import 'package:mindcheck_app/services/question_manege.dart';
 import 'package:mindcheck_app/services/question_service.dart';
 import 'package:mindcheck_app/services/user_answer_service.dart';
@@ -25,20 +26,37 @@ class _QuestionScreenState extends State<QuestionScreen> {
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(initialPage: 0);
     _qAList = QuestionService().selectQuestionsAndAnswersByCategoryId(widget.category.id);
-    QuestionManege.loadLocalStorageQuestionProgress(categoryId: widget.category.id)
-    .then((data) {
-     setState(() {
-       currentIndex = data['currentIndex'];
-       selectedAnswerIds = data['selectedAnswerIds'];
-      _pageController = PageController(initialPage: currentIndex);
-     });
-   });
-
+    _checkAndLoadProgress(widget.category.id);
   }
-  
-  void _showSubmitDialog(Map<int,int?> selectedAnswerIds,String userId){
+
+  Future<bool> _checkAndLoadProgress(int categoryId) async {
+
+
+  final isOK = await QuestionManege.isTodayQuestionProgressing(widget.category.id);
+  if (!isOK) {
+    await QuestionManege.clearLocalStorageProgress(widget.category.id);
+    setState(() {
+      _pageController = PageController(initialPage: 0);
+    });
+
+    return false; // 오늘 설문은 새로 시작
+  } else {
+    // 오늘 진행 중이면 기존 데이터 불러오기
+    final data = await QuestionManege.loadLocalStorageQuestionProgress(
+      categoryId: widget.category.id,
+    );
+
+    setState(() {
+      selectedAnswerIds = data['selectedAnswerIds'];
+      currentIndex = data['currentIndex'];
+      _pageController = PageController(initialPage: currentIndex);
+    });
+
+    return true; // 오늘 설문 진행 중
+  }
+  }
+  void showSubmitDialog(Map<int,int?> selectedAnswerIds,String userId){
     showDialog(
           context: context, 
           builder: (context){
@@ -54,10 +72,18 @@ class _QuestionScreenState extends State<QuestionScreen> {
                   child: const Text("아니오"),
                   ),
                   ElevatedButton(
-                  onPressed: (){
+                  onPressed: () async{
                     print("답변 제출 예 선택");
                     Navigator.pop(context);
-                    UserAnswerService().saveUserAnswers(selectedAnswerIds, userId);
+                    bool isSavedOk = await UserAnswerService().saveUserAnswers(selectedAnswerIds, userId);
+                    if(isSavedOk){
+                      if(context.mounted){
+                        Navigator.pushReplacement(context, 
+                        MaterialPageRoute(
+                          builder: (context) => ResultScreen(),
+                         ));
+                      }
+                    }
                   }, 
                   child: const Text("네"), 
                   ),
@@ -68,7 +94,6 @@ class _QuestionScreenState extends State<QuestionScreen> {
   }
   @override
   Widget build(BuildContext context) {
-    print(selectedAnswerIds.length);
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -214,7 +239,7 @@ class _QuestionScreenState extends State<QuestionScreen> {
                                       );
                                       bool isShowDialog = qAList.every((q) => selectedAnswerIds.containsKey(q.id));
                                       if(isShowDialog){
-                                        _showSubmitDialog(selectedAnswerIds,"f9912098-c73a-45fc-847b-e8871b3d33a0");
+                                        showSubmitDialog(selectedAnswerIds,"f9912098-c73a-45fc-847b-e8871b3d33a0");
                                       }
                                     },
                                     child: Text(

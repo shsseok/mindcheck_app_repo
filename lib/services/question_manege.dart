@@ -6,7 +6,7 @@ class QuestionManege {
  
   static String _indexKey(int categoryId) => 'currentQuestionIndex_$categoryId';
   static String _answersKey(int categoryId) => 'selectedAnswerIds_$categoryId';
-  
+  static String _dateKey(int categoryId) => 'lastQuestionDate_$categoryId';
   static Future<void> saveLocalStorageQuestionProgress({
     required int categoryId,
     required int currentIndex,
@@ -17,6 +17,7 @@ class QuestionManege {
     final json = jsonEncode(selectedAnswerIds.map((key,value) => MapEntry(key.toString(), value)));
     await prefs.setInt(_indexKey(categoryId), currentIndex);
     await prefs.setString(_answersKey(categoryId), json);
+    await prefs.setString(_dateKey(categoryId), DateTime.now().toIso8601String().substring(0, 10));
   }
 
   static Future<Map<String, dynamic>> loadLocalStorageQuestionProgress({
@@ -56,7 +57,18 @@ class QuestionManege {
         final prefs = await SharedPreferences.getInstance();
         await prefs.remove(_indexKey(categoryId));
         await prefs.remove(_answersKey(categoryId));
-}
+    }
+
+    static Future<bool> isTodayQuestionProgressing(int categoryId) async{
+        final prefs = await SharedPreferences.getInstance();
+        final date = prefs.getString(_dateKey(categoryId));
+        final today = DateTime.now().toIso8601String().substring(0,10);
+        if(date == null || date != today){
+           return false;
+        }
+        return true;
+    }
+
 
 
 }

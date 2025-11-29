@@ -26,4 +26,20 @@ Future<List<Answer>> selectAnswer(int questionId) async {
       }
      return answerList;
 }
+
+Future<int> selectAnswersSumBycategoryIdAndTodayDate(String userId) async{
+       final answersSumResponse = await supabase.rpc('sql', params: {
+      'query': '''
+        SELECT SUM(a.score) AS total_score
+        FROM answers a
+        WHERE a.id IN (
+          SELECT ua.answer_id 
+          FROM user_answers ua
+          WHERE ua.user_id = '$userId'
+            AND DATE(ua.created_at) = CURRENT_DATE
+        );
+      '''
+    });
+    return answersSumResponse;
+}
 }
