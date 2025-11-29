@@ -1,17 +1,53 @@
 import 'package:flutter/material.dart';
+import 'package:mindcheck_app/models/categories.dart';
+import 'package:mindcheck_app/screens/question_screen.dart';
+import 'package:mindcheck_app/services/category_service.dart';
+import 'package:mindcheck_app/services/question_manege.dart';
 
 class MainScreen extends StatelessWidget {
   const MainScreen({super.key});
 
+ void _showStartDialog(BuildContext context, Categories category,bool isProgress) {
+  if(!isProgress){
+     showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("질문 시작"),
+        content:  Text("${category.name} 관련 질문을 시작하시겠습니까?"),
+        actions: [
+          TextButton(
+            onPressed: (){
+              print("질문 선택 (예) 클릭");
+              Navigator.push(
+                context, 
+                MaterialPageRoute(
+                  builder: (context) => QuestionScreen(category: category)
+                  ),
+                );
+            },
+            child: const Text("예"),
+          ),
+          TextButton(
+            onPressed: () {
+               print("질문 선택 (아니오) 클릭");
+                Navigator.pop(context);
+          },
+            child: const Text("아니오"),
+          ),
+        ],
+      ),
+    );
+  }else{
+      Navigator.push(context, 
+      MaterialPageRoute(
+        builder: (_) => QuestionScreen(category: category),
+        ),
+      );
+  }
+  
+  }
   @override
   Widget build(BuildContext context) {
-    final List<Map<String, dynamic>> categories = [
-      {'title': '연애', 'color': Colors.pinkAccent},
-      {'title': '성격', 'color': Colors.blueAccent},
-      {'title': '우정', 'color': Colors.greenAccent},
-      {'title': '회사생활', 'color': Colors.orangeAccent},
-    ];
-
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -35,34 +71,51 @@ class MainScreen extends StatelessWidget {
         ),
         child: Center(
           child: SafeArea(
-            child: GridView.count(
-              padding: const EdgeInsets.all(60),
-              crossAxisCount: 2,
-              mainAxisSpacing: 20,
-              crossAxisSpacing: 20,
-              children: categories.map((category) {
-                return ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: category['color'].withOpacity(0.8),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    padding: const EdgeInsets.all(10),
-                  ),
-                  onPressed: () {
-                    // TODO: 카테고리 클릭 시 이동할 페이지 연결
-                    print('${category['title']} 클릭됨');
-                  },
-                  child: Text(
-                    category['title'],
-                    style: const TextStyle(
-                      fontFamily: 'Macondo',
-                      fontSize: 24,
-                      color: Colors.white,
-                    ),
-                  ),
+            child: FutureBuilder<List<Categories>>(
+              future: CategoryService().getCategoryList(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  // 데이터 로딩 중
+                  return const CircularProgressIndicator();
+                } else if (snapshot.hasError) {
+                  // 에러 발생 시
+                  return Text('오류: ${snapshot.error}');
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  // 데이터 없음
+                  return const Text('카테고리가 없습니다.');
+                }
+
+                final categories = snapshot.data!;
+
+                return GridView.count(
+                  padding: const EdgeInsets.all(60),
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 20,
+                  crossAxisSpacing: 20,
+                  children: categories.map((category) {
+                    return ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        padding: const EdgeInsets.all(10),
+                      ),
+                      onPressed: () async {
+                        final isProgress = await QuestionManege.hasProgress(categoryId: category.id);
+                        _showStartDialog(context,category,isProgress);
+                      },
+                      child: Text(
+                        category.name,
+                        style: const TextStyle(
+                          fontFamily: 'Macondo',
+                          fontSize: 24,
+                          color: Colors.black,
+                        ),
+                      ),
+                    );
+                  }).toList(),
                 );
-              }).toList(),
+              },
             ),
           ),
         ),
